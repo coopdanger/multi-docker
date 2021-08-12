@@ -1,0 +1,24 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t alissacooper/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run alissacooper/react-test npm test -- --coverage
+
+atfer_success:
+  - docker build -t alissacooper/multi-client ./client
+  - docker build -t alissacooper/multi-nginx ./nginx
+  - docker build -t alissacooper/multi-server ./server
+  - docker built -t alissacooper/multi-worker ./worker
+  # Login to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to Docker Hub
+  - docker push alissacooper/multi-client
+  - docker push alissacooper/multi-nginx
+  - docker push alissacooper/multi-server
+  - docker push alissacooper/multi-worker
+
+  
